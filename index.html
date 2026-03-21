@@ -23,12 +23,27 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .pill-elec{background:rgba(14,168,110,0.1);color:var(--elec);border:1px solid rgba(14,168,110,0.3);}
 .pill-gas{background:rgba(232,90,30,0.1);color:var(--gas);border:1px solid rgba(232,90,30,0.3);}
 .pill-glp{background:rgba(26,127,212,0.1);color:var(--glp);border:1px solid rgba(26,127,212,0.3);}
-.tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--surface);border-radius:12px;padding:4px;border:1px solid var(--border);}
-.tab{flex:1;padding:8px 6px;font-size:12px;font-weight:500;font-family:inherit;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:9px;transition:all 0.2s;text-align:center;}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--surface);border-radius:12px;padding:4px;border:1px solid var(--border);overflow-x:auto;}
+.tab{flex:1;min-width:80px;padding:8px 6px;font-size:12px;font-weight:500;font-family:inherit;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:9px;transition:all 0.2s;text-align:center;white-space:nowrap;}
 .tab.active{background:var(--surface2);color:var(--text);border:1px solid var(--border);font-weight:600;}
+ 
+/* LAYOUT PC: dos columnas */
 .split{display:grid;grid-template-columns:280px 1fr;gap:12px;align-items:start;}
 .left-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;position:sticky;top:12px;}
 .right-panel{display:flex;flex-direction:column;gap:12px;}
+ 
+/* LAYOUT MÓVIL: una columna */
+@media(max-width:680px){
+  .split{grid-template-columns:1fr;}
+  .left-panel{position:static;}
+  .app{padding:1rem 0.75rem 2rem;}
+  .header h1{font-size:18px;}
+  .tab{font-size:11px;padding:7px 4px;min-width:60px;}
+  .mcard-val{font-size:15px;}
+  .metrics{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .mant-grid{grid-template-columns:1fr 1fr;}
+}
+ 
 .panel-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;}
 .sep{font-size:10px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em;margin:0.85rem 0 0.6rem;padding-top:0.75rem;border-top:1px solid var(--border);}
 .slider-block{margin-bottom:0.75rem;}
@@ -38,7 +53,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .slider-val{font-size:12px;font-weight:700;color:var(--text);}
 .slider-hint{font-size:10px;color:var(--faint);margin-bottom:4px;}
 input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border);border-radius:2px;outline:none;}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--elec);cursor:pointer;border:2px solid white;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--elec);cursor:pointer;border:2px solid white;}
 .card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
 .card-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
 .card-desc{font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.6;}
@@ -102,15 +117,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       <span class="pill pill-glp">🔵 Gas GLP</span>
     </div>
   </div>
-
+ 
   <div class="tabs">
     <button class="tab active" onclick="switchTab('sim')">Simulador</button>
-    <button class="tab" onclick="switchTab('be')">Punto de equilibrio</button>
+    <button class="tab" onclick="switchTab('be')">Equilibrio</button>
     <button class="tab" onclick="switchTab('mant')">Mantenimiento</button>
     <button class="tab" onclick="switchTab('efic')">Eficiencia</button>
     <button class="tab" onclick="switchTab('amb')">Ambiental</button>
   </div>
-
+ 
   <div id="tab-sim" class="animate">
     <div class="split">
       <div class="left-panel">
@@ -184,7 +199,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
     </div>
   </div>
-
+ 
   <div id="tab-be" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -214,7 +229,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
     </div>
   </div>
-
+ 
   <div id="tab-mant" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -228,16 +243,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div class="card-title">Costo anual de mantenimiento preventivo</div>
           <div class="card-desc">Estimado para Costa Rica 2026.</div>
           <div class="mant-grid">
-            <div class="mant-card">
-              <div class="mant-label" style="color:#e85a1e">⛽ Gasolina</div>
-              <div class="mant-val" style="color:#e85a1e">₡250 000</div>
-              <div class="mant-sub">Aceite · filtros · bujías · correas</div>
-            </div>
-            <div class="mant-card">
-              <div class="mant-label" style="color:#0ea86e">⚡ Eléctrico</div>
-              <div class="mant-val" style="color:#0ea86e">₡80 000</div>
-              <div class="mant-sub">Frenos · llantas · líquidos · filtro cabina</div>
-            </div>
+            <div class="mant-card"><div class="mant-label" style="color:#e85a1e">⛽ Gasolina</div><div class="mant-val" style="color:#e85a1e">₡250 000</div><div class="mant-sub">Aceite · filtros · bujías · correas</div></div>
+            <div class="mant-card"><div class="mant-label" style="color:#0ea86e">⚡ Eléctrico</div><div class="mant-val" style="color:#0ea86e">₡80 000</div><div class="mant-sub">Frenos · llantas · líquidos · filtro cabina</div></div>
           </div>
         </div>
         <div class="card">
@@ -249,13 +256,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
           <div class="card-desc">Cuánto ahorrás al elegir eléctrico sobre gasolina, solo por mantenimiento, año a año.</div>
           <div style="position:relative;width:100%;height:200px;"><canvas id="c_mant2"></canvas></div>
         </div>
-        <div class="success-box">
-          <p>✅ El eléctrico ahorra <strong>₡170 000 anuales</strong> en mantenimiento. En 10 años eso suma ₡1 700 000 adicionales al ahorro en combustible.</p>
-        </div>
+        <div class="success-box"><p>✅ El eléctrico ahorra <strong>₡170 000 anuales</strong> en mantenimiento. En 10 años eso suma ₡1 700 000 adicionales al ahorro en combustible.</p></div>
       </div>
     </div>
   </div>
-
+ 
   <div id="tab-efic" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -278,7 +283,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
       </div>
     </div>
   </div>
-
+ 
   <div id="tab-amb" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -299,7 +304,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
     </div>
   </div>
 </div>
-
+ 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 const REND={gasKmL:12,glpKmL:10,elecKwhKm:0.18};
@@ -346,7 +351,7 @@ function updateCharts(p,d){
   mk('c1',{type:'line',data:{labels,datasets:[{label:'Eléctrico',data:dE,borderColor:'#0ea86e',backgroundColor:'rgba(14,168,110,0.07)',tension:0.35,fill:true,pointRadius:2,pointBackgroundColor:'#0ea86e'},{label:'Gasolina',data:dG,borderColor:'#e85a1e',backgroundColor:'rgba(232,90,30,0.07)',tension:0.35,fill:true,pointRadius:2,pointBackgroundColor:'#e85a1e'},{label:'Gas GLP',data:dL,borderColor:'#1a7fd4',backgroundColor:'rgba(26,127,212,0.07)',tension:0.35,fill:true,pointRadius:2,pointBackgroundColor:'#1a7fd4'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>' ₡'+ctx.parsed.y.toFixed(2)+'M total'}}},scales:{x:{ticks:TICK,grid:{color:GRID}},y:{ticks:{...TICK,callback:v=>'₡'+v+'M'},grid:{color:GRID}}}}});
   const cKmGasT=d.cKmGas+MANT.gas/(p.km*12);const cKmElecT=d.cKmElec+MANT.elec/(p.km*12);const cKmGlpT=d.cKmGlp+MANT.glp/(p.km*12);
   const beGE=(p.c0elec-p.c0gas)/(cKmGasT-cKmElecT);const beLe=(p.c0elec-p.c0glp)/(cKmGlpT-cKmElecT);const beGL=(p.c0glp-p.c0gas)/(cKmGasT-cKmGlpT);
-  function fmtBE(km,nB,nC){if(!isFinite(km)||km<0)return{val:'Sin equilibrio',desc:`Con estos precios el ${nC} siempre es más barato.`,warn:false};const m=Math.round(km/p.km);const a=(m/12).toFixed(1);const warn=m>240;const desc=warn?`A tu ritmo actual esto tardaría ${a} años — un plazo poco realista.`:`Después de ${m} meses (${a} años) manejando ${fmt(p.km)} km/mes, el ${nB} habrá costado lo mismo que el ${nC} en total, contando combustible y mantenimiento. A partir de ahí el ${nB} es más económico.`;return{val:fmt(Math.round(km))+' km',desc,warn};}
+  function fmtBE(km,nB,nC){if(!isFinite(km)||km<0)return{val:'Sin equilibrio',desc:`Con estos precios el ${nC} siempre es más barato.`,warn:false};const m=Math.round(km/p.km);const a=(m/12).toFixed(1);const warn=m>240;const desc=warn?`A tu ritmo actual esto tardaría ${a} años — un plazo poco realista.`:`Después de ${m} meses (${a} años) manejando ${fmt(p.km)} km/mes, el ${nB} habrá costado lo mismo que el ${nC} en total. A partir de ahí el ${nB} es más económico.`;return{val:fmt(Math.round(km))+' km',desc,warn};}
   const rows=[{label:'Eléctrico vs Gasolina',be:fmtBE(beGE,'eléctrico','de gasolina'),color:'#0ea86e'},{label:'Eléctrico vs Gas GLP',be:fmtBE(beLe,'eléctrico','de gas GLP'),color:'#0ea86e'},{label:'Gas GLP vs Gasolina',be:fmtBE(beGL,'GLP','de gasolina'),color:'#1a7fd4'}];
   const bl=document.getElementById('be-list');
   if(bl)bl.innerHTML=rows.map(r=>`<div class="be-row"><div><div class="be-label">${r.label}</div><div class="be-subdesc">${r.be.desc}</div>${r.be.warn?`<div class="warn-box"><p>⚠️ <strong>Plazo muy largo.</strong> Subí los km/mes en el Simulador para ver un escenario más realista.</p></div>`:''}</div><div class="be-val" style="color:${r.color}">${r.be.val}</div></div>`).join('');
@@ -378,3 +383,4 @@ update();
 </script>
 </body>
 </html>
+ 
