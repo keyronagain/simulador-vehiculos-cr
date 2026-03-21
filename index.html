@@ -103,6 +103,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
 .info-box{background:#f0faf6;border:1px solid rgba(14,168,110,0.25);border-radius:10px;padding:0.75rem;}
 .info-box p{font-size:12px;color:#0a7a50;line-height:1.6;}
 .success-box{background:#f0faf6;border:1px solid rgba(14,168,110,0.3);border-radius:10px;padding:0.75rem;}
+.ahorro-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:0.75rem;}
+.ahorro-card{background:#f0faf6;border:1px solid rgba(14,168,110,0.2);border-radius:10px;padding:0.6rem;text-align:center;}
+.ahorro-label{font-size:10px;color:#0a7a50;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;}
+.ahorro-val{font-size:15px;font-weight:700;color:#0ea86e;line-height:1;}
+.ahorro-sub{font-size:10px;color:#606080;margin-top:2px;}
 .success-box p{font-size:12px;color:#0a7a50;line-height:1.6;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
 @keyframes numPop{0%{transform:scale(1);}50%{transform:scale(1.06);}100%{transform:scale(1);}}
@@ -185,6 +190,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
           <div class="card-title">Costo total acumulado</div>
           <div class="card-desc">Precio de compra + combustible o electricidad + mantenimiento preventivo anual. El número debajo es cuánto cuesta cada kilómetro individual solo en combustible.</div>
           <div class="metrics" id="metric-cards"></div>
+          <div style="margin-top:0.75rem;">
+            <div style="font-size:11px;font-weight:600;color:#0a7a50;margin-bottom:6px;">🟢 Ahorro al elegir eléctrico vs gasolina</div>
+            <div class="ahorro-grid" id="ahorro-cards"></div>
+          </div>
         </div>
         <div class="card">
           <div class="card-title">Evolución del costo año a año</div>
@@ -198,7 +207,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         </div>
         <div class="card">
           <div class="card-title">Costo por kilómetro — solo combustible</div>
-          <div class="card-desc">El eléctrico usa 18 kWh/100 km (5.5 km/kWh) según datos de RECOPE.</div>
+          <div class="card-desc">Cuánto pagás cada vez que recorrés 1 km. Se calcula dividiendo el precio del combustible entre el rendimiento del vehículo.</div>
           <div id="bar-compare"></div>
         </div>
       </div>
@@ -211,7 +220,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;heigh
         <div class="panel-title">¿Qué es esto?</div>
         <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">El eléctrico cuesta más al comprarlo pero menos al manejarlo y mantenerlo. El punto de equilibrio es el kilómetro exacto donde ambos vehículos han costado lo mismo en total.</p>
         <div class="formula-box">
-          <p>Modelo matemático:<br><strong>Costo total = precio de compra + (costo por km × km) + mantenimiento anual × años</strong><br><br>El punto de equilibrio se encuentra igualando esa fórmula para dos vehículos y despejando los kilómetros.</p>
+          <p>Notación matemática:<br><strong>C(x) = C₀ + c · x + m · t</strong><br><br>
+          Donde <strong>C₀</strong> = precio de compra &nbsp;·&nbsp; <strong>c</strong> = costo por km &nbsp;·&nbsp; <strong>x</strong> = km recorridos &nbsp;·&nbsp; <strong>m</strong> = mantenimiento anual &nbsp;·&nbsp; <strong>t</strong> = años de análisis<br><br>
+          En palabras:<br><strong>Costo total = precio de compra + (costo por km × km recorridos) + mantenimiento anual × años de análisis</strong><br><br>
+          El punto de equilibrio se encuentra igualando esa fórmula para dos vehículos y despejando x.</p>
         </div>
         <p style="font-size:11px;color:#a0a0c0;line-height:1.6;">Ajustá los km/mes en el Simulador para ver cómo cambia el resultado.</p>
       </div>
@@ -349,6 +361,29 @@ function update(){
   const bc=document.getElementById('bar-compare');
   if(bc)bc.innerHTML=vals.map(x=>`<div class="bar-row"><div class="bar-header"><span class="bar-name">${x.l}</span><span style="font-weight:600;color:${x.c}">₡${fmt(x.v)} por km</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(x.v/maxV*100)}%;background:${x.c};"></div></div></div>`).join('');
   updateCharts(p,d);updateAmb(p);updateMant(p);
+
+  // Ahorro comparativo
+  const ahorroKm = d.cKmGas - d.cKmElec;
+  const ahorroMes = ahorroKm * p.km;
+  const ahorroAnual = ahorroMes * 12;
+  const ac = document.getElementById('ahorro-cards');
+  if(ac) ac.innerHTML = `
+    <div class="ahorro-card">
+      <div class="ahorro-label">Por km</div>
+      <div class="ahorro-val">₡${fmt(ahorroKm)}</div>
+      <div class="ahorro-sub">menos en eléctrico</div>
+    </div>
+    <div class="ahorro-card">
+      <div class="ahorro-label">Por mes</div>
+      <div class="ahorro-val">₡${fmt(ahorroMes)}</div>
+      <div class="ahorro-sub">a ${fmt(p.km)} km/mes</div>
+    </div>
+    <div class="ahorro-card">
+      <div class="ahorro-label">Por año</div>
+      <div class="ahorro-val">₡${fmt(ahorroAnual)}</div>
+      <div class="ahorro-sub">solo en combustible</div>
+    </div>
+  `;
 }
 function updateCharts(p,d){
   const labels=[],dE=[],dG=[],dL=[];
