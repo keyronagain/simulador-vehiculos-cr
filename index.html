@@ -23,7 +23,7 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 .pill-elec{background:rgba(14,168,110,0.1);color:var(--elec);border:1px solid rgba(14,168,110,0.3);}
 .pill-gas{background:rgba(232,90,30,0.1);color:var(--gas);border:1px solid rgba(232,90,30,0.3);}
 .pill-glp{background:rgba(26,127,212,0.1);color:var(--glp);border:1px solid rgba(26,127,212,0.3);}
-.tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--surface);border-radius:12px;padding:4px;border:1px solid var(--border);overflow-x:auto;}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--surface);border-radius:12px;padding:4px;border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .tab{flex:1;min-width:80px;padding:8px 6px;font-size:12px;font-weight:500;font-family:inherit;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:9px;transition:all 0.2s;text-align:center;white-space:nowrap;}
 .tab.active{background:var(--surface2);color:var(--text);border:1px solid var(--border);font-weight:600;}
  
@@ -36,12 +36,15 @@ body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans
 @media(max-width:680px){
   .split{grid-template-columns:1fr;}
   .left-panel{position:static;}
+  .right-panel{gap:12px;}
   .app{padding:1rem 0.75rem 2rem;}
   .header h1{font-size:18px;}
-  .tab{font-size:11px;padding:7px 4px;min-width:60px;}
+  .tab{font-size:10px;padding:7px 3px;min-width:56px;}
   .mcard-val{font-size:15px;}
   .metrics{grid-template-columns:repeat(3,minmax(0,1fr));}
   .mant-grid{grid-template-columns:1fr 1fr;}
+  .card{margin-bottom:0;}
+  .insight,.info-box,.success-box,.warn-box{margin-top:0;}
 }
  
 .panel-title{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;}
