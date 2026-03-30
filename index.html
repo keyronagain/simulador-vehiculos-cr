@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simulador de Costos Vehiculares — Costa Rica</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <h1>Simulador de costos vehiculares 🇨🇷</h1>
+    <p>Mové los sliders y mirá cómo cambian las gráficas en tiempo real</p>
+    <div class="source">Datos: RECOPE · ICE · Ley 9518 · marzo 2026</div>
+    <div class="pills">
+      <span class="pill pill-elec">⚡ Eléctrico</span>
+      <span class="pill pill-gas">⛽ Gasolina</span>
+      <span class="pill pill-glp">🔵 Gas GLP</span>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('sim')">Simulador</button>
+    <button class="tab" onclick="switchTab('be')">Equilibrio</button>
+    <button class="tab" onclick="switchTab('mant')">Mantenim.</button>
+    <button class="tab" onclick="switchTab('efic')">Eficiencia</button>
+    <button class="tab" onclick="switchTab('amb')">Ambiental</button>
+  </div>
+
+  <!-- ── SIMULADOR ──────────────────────────────────────────────── -->
+  <div id="tab-sim" class="animate">
+    <div class="split">
+      <div class="left-panel">
+        <div class="panel-title">Parámetros</div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label">Km por mes</span><span class="slider-val" id="km-out">1 250 km</span></div>
+          <div class="slider-hint">15 000 km/año = referencia del estudio</div>
+          <input type="range" min="200" max="5000" step="100" value="1250" id="km" oninput="update()">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label">Años de análisis</span><span class="slider-val" id="years-out">10 años</span></div>
+          <div class="slider-hint">¿Cuánto tiempo con el vehículo?</div>
+          <input type="range" min="1" max="15" step="1" value="10" id="years" oninput="update()">
+        </div>
+
+        <div class="sep">Precio de compra</div>
+        <div class="slider-hint" style="margin-bottom:8px;">Referencia: SUV compacto tipo Hyundai Kona / BYD Yuan Pro</div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label" style="color:#0ea86e">⚡ Eléctrico</span><span class="slider-val" id="c0elec-out">₡18M</span></div>
+          <div class="slider-hint">BYD Yuan Pro, Kia EV6, Nissan Leaf</div>
+          <input type="range" min="10000000" max="40000000" step="500000" value="18000000" id="c0elec" oninput="update()">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label" style="color:#e85a1e">⛽ Gasolina</span><span class="slider-val" id="c0gas-out">₡9M</span></div>
+          <div class="slider-hint">Hyundai Kona gasolina, Toyota Corolla</div>
+          <input type="range" min="5000000" max="25000000" step="500000" value="9000000" id="c0gas" oninput="update()">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label" style="color:#1a7fd4">🔵 Gas GLP</span><span class="slider-val" id="c0glp-out">₡11M</span></div>
+          <div class="slider-hint">Incluye costo de conversión a GLP</div>
+          <input type="range" min="5000000" max="25000000" step="500000" value="11000000" id="c0glp" oninput="update()">
+        </div>
+
+        <div class="sep">Precios de combustible</div>
+        <div class="slider-hint" style="margin-bottom:8px;">Regulados por ARESEP e ICE. Podés simular subidas de precio.</div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label">Gasolina (₡/L)</span><span class="slider-val" id="pgas-out">₡650</span></div>
+          <div class="slider-hint">Precio referencia del estudio: ₡650/L</div>
+          <input type="range" min="500" max="1000" step="10" value="650" id="pgas" oninput="update()">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label">Gas GLP (₡/L)</span><span class="slider-val" id="pglp-out">₡280</span></div>
+          <div class="slider-hint">Casi la mitad del precio de la gasolina</div>
+          <input type="range" min="150" max="500" step="10" value="280" id="pglp" oninput="update()">
+        </div>
+
+        <div class="slider-block">
+          <div class="slider-top"><span class="slider-label">Electricidad (₡/kWh)</span><span class="slider-val" id="pelec-out">₡105</span></div>
+          <div class="slider-hint">Promedio ponderado ICE residencial: ₡105/kWh</div>
+          <input type="range" min="60" max="200" step="5" value="105" id="pelec" oninput="update()">
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-title">Costo total acumulado</div>
+          <div class="card-desc">Precio de compra + combustible o electricidad + mantenimiento preventivo anual. El número debajo es cuánto cuesta cada kilómetro individual solo en combustible.</div>
+          <div class="metrics" id="metric-cards"></div>
+          <div style="margin-top:0.75rem;">
+            <div style="font-size:11px;font-weight:600;color:#0a7a50;margin-bottom:6px;">🟢 Ahorro al elegir eléctrico vs gasolina</div>
+            <div class="ahorro-grid" id="ahorro-cards"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Evolución del costo año a año</div>
+          <div class="card-desc">El punto donde arranca cada línea es el precio de compra. La velocidad a la que sube incluye combustible y mantenimiento. Donde se cruzan dos líneas es el punto de equilibrio.</div>
+          <div class="legend">
+            <span class="leg"><span class="leg-dot" style="background:#0ea86e"></span>Eléctrico</span>
+            <span class="leg"><span class="leg-dot" style="background:#e85a1e"></span>Gasolina</span>
+            <span class="leg"><span class="leg-dot" style="background:#1a7fd4"></span>Gas GLP</span>
+          </div>
+          <div style="position:relative;width:100%;height:240px;"><canvas id="c1"></canvas></div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Costo por kilómetro — solo combustible</div>
+          <div class="card-desc">Cuánto pagás cada vez que recorrés 1 km. Se calcula dividiendo el precio del combustible entre el rendimiento del vehículo.</div>
+          <div id="bar-compare"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EQUILIBRIO ─────────────────────────────────────────────── -->
+  <div id="tab-be" style="display:none;">
+    <div class="split">
+      <div class="left-panel">
+        <div class="panel-title">¿Qué es esto?</div>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">El eléctrico cuesta más al comprarlo pero menos al manejarlo y mantenerlo. El punto de equilibrio es el kilómetro exacto donde ambos vehículos han costado lo mismo en total.</p>
+        <div class="formula-box">
+          <p>Notación matemática:<br><strong>C(x) = C₀ + c · x + m · t</strong><br><br>
+          Donde <strong>C₀</strong> = precio de compra &nbsp;·&nbsp; <strong>c</strong> = costo por km &nbsp;·&nbsp; <strong>x</strong> = km recorridos &nbsp;·&nbsp; <strong>m</strong> = mantenimiento anual &nbsp;·&nbsp; <strong>t</strong> = años de análisis<br><br>
+          En palabras:<br><strong>Costo total = precio de compra + (costo por km × km recorridos) + mantenimiento anual × años de análisis</strong><br><br>
+          El punto de equilibrio se encuentra igualando esa fórmula para dos vehículos y despejando x.</p>
+        </div>
+        <p style="font-size:11px;color:#a0a0c0;line-height:1.6;">Ajustá los km/mes en el Simulador para ver cómo cambia el resultado.</p>
+      </div>
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-title">¿Cuándo se recupera la inversión?</div>
+          <div id="be-list"></div>
+        </div>
+        <div class="insight" id="be-insight"><p></p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── MANTENIMIENTO ──────────────────────────────────────────── -->
+  <div id="tab-mant" style="display:none;">
+    <div class="split">
+      <div class="left-panel">
+        <div class="panel-title">¿Por qué importa?</div>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">El costo de un vehículo no es solo el combustible. El mantenimiento preventivo representa un gasto anual que muchos análisis ignoran.</p>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">El eléctrico necesita menos mantenimiento — no hay motor de combustión, no hay cambios de aceite, no hay bujías ni correas.</p>
+        <p style="font-size:12px;color:#606080;line-height:1.7;">Solo necesita revisión de frenos, llantas, líquido de parabrisas y filtro de cabina.</p>
+      </div>
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-title">Costo anual de mantenimiento preventivo</div>
+          <div class="card-desc">Estimado para Costa Rica 2026.</div>
+          <div class="mant-grid">
+            <div class="mant-card"><div class="mant-label" style="color:#e85a1e">⛽ Gasolina</div><div class="mant-val" style="color:#e85a1e">₡250 000</div><div class="mant-sub">Aceite · filtros · bujías · correas</div></div>
+            <div class="mant-card"><div class="mant-label" style="color:#0ea86e">⚡ Eléctrico</div><div class="mant-val" style="color:#0ea86e">₡80 000</div><div class="mant-sub">Frenos · llantas · líquidos · filtro cabina</div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Comparación de mantenimiento anual</div>
+          <div style="position:relative;width:100%;height:200px;"><canvas id="c_mant"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Ahorro acumulado en mantenimiento</div>
+          <div class="card-desc">Cuánto ahorrás al elegir eléctrico sobre gasolina, solo por mantenimiento, año a año.</div>
+          <div style="position:relative;width:100%;height:200px;"><canvas id="c_mant2"></canvas></div>
+        </div>
+        <div class="success-box"><p>✅ El eléctrico ahorra <strong>₡170 000 anuales</strong> en mantenimiento. En 10 años eso suma ₡1 700 000 adicionales al ahorro en combustible.</p></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── EFICIENCIA ─────────────────────────────────────────────── -->
+  <div id="tab-efic" style="display:none;">
+    <div class="split">
+      <div class="left-panel">
+        <div class="panel-title">¿Qué significa eficiencia?</div>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">De cada ₡100 de energía que le ponés al vehículo, ¿cuántos realmente lo mueven hacia adelante? El resto se pierde en calor.</p>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">El eléctrico aprovecha el <strong style="color:#0ea86e">60%</strong>. La gasolina solo el <strong style="color:#e85a1e">19%</strong> — el otro 81% se va en humo. Los motores de combustión operan como máquinas térmicas y siempre pierden energía en calor (segunda ley de la termodinámica).</p>
+        <p style="font-size:12px;color:#606080;line-height:1.7;">Por eso el eléctrico es más barato por km aunque pagues por la electricidad.</p>
+      </div>
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-title">Eficiencia de conversión energética</div>
+          <div class="card-desc">Porcentaje de la energía que realmente mueve el vehículo. Fuente: Johannes Kückens, La Nación Argentina, marzo 2026.</div>
+          <div style="position:relative;width:100%;height:210px;"><canvas id="c3"></canvas></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Rendimiento en ruta</div>
+          <div class="card-desc">El eléctrico consume 18 kWh/100 km (5.5 km/kWh) según RECOPE. El kWh es la misma unidad del recibo de la luz y sale mucho más barato que un litro de gasolina.</div>
+          <div style="position:relative;width:100%;height:190px;"><canvas id="c4"></canvas></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AMBIENTAL ──────────────────────────────────────────────── -->
+  <div id="tab-amb" style="display:none;">
+    <div class="split">
+      <div class="left-panel">
+        <div class="panel-title">Contexto ambiental</div>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">El vehículo eléctrico no emite humo por el caño, pero la generación de electricidad produce algo de CO₂ de forma indirecta.</p>
+        <p style="font-size:12px;color:#606080;line-height:1.7;margin-bottom:0.75rem;">En Costa Rica ese impacto es mínimo porque el <strong style="color:#0ea86e">99% de la electricidad</strong> viene de fuentes renovables: agua, viento y geotermia.</p>
+        <p style="font-size:12px;color:#606080;line-height:1.7;">Esto hace que la ventaja ambiental del eléctrico sea mucho mayor aquí que en países con electricidad de origen fósil.</p>
+      </div>
+      <div class="right-panel">
+        <div class="card">
+          <div class="card-title">Emisiones de CO₂ por año</div>
+          <div class="card-desc">Calculado según los km configurados en el simulador.</div>
+          <div class="metrics" id="em-cards"></div>
+          <div style="position:relative;width:100%;height:210px;margin-top:0.75rem;"><canvas id="c5"></canvas></div>
+        </div>
+        <div class="info-box"><p>🌿 El eléctrico emite ~10 kg de CO₂ por cada 1 000 km. La gasolina emite ~170 kg por los mismos 1 000 km — 17 veces más.</p></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
