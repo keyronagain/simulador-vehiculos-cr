@@ -1,4 +1,4 @@
-# 🇨🇷 Costa Rica Vehicle Cost Simulator
+# Costa Rica Vehicle Cost Simulator
 
 An interactive web simulator that compares the total ownership cost of electric, gasoline, and LPG gas vehicles in the Costa Rican context.
 
