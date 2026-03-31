@@ -1,14 +1,125 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Simulador de Costos Vehiculares — Costa Rica</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Costos Vehiculares — Costa Rica</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f5f7;--surface:#ffffff;--surface2:#f0f0f5;--border:#e0e0ea;
+  --elec:#0ea86e;--gas:#e85a1e;--glp:#1a7fd4;
+  --text:#1a1a2e;--muted:#2a2a2a;--faint:#444444;
+}
+body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;font-size:14px;line-height:1.5;}
+.app{max-width:960px;margin:0 auto;padding:1.25rem 1rem 2rem;}
+.header{margin-bottom:1.25rem;}
+.header h1{font-size:20px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.header p{font-size:13px;color:var(--muted);}
+.source{font-size:10px;color:var(--faint);margin-top:4px;}
+.pills{display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;}
+.pill{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:500;}
+.pill-elec{background:rgba(14,168,110,0.1);color:var(--elec);border:1px solid rgba(14,168,110,0.3);}
+.pill-gas{background:rgba(232,90,30,0.1);color:var(--gas);border:1px solid rgba(232,90,30,0.3);}
+.pill-glp{background:rgba(26,127,212,0.1);color:var(--glp);border:1px solid rgba(26,127,212,0.3);}
+.tabs{display:flex;gap:4px;margin-bottom:1rem;background:var(--surface);border-radius:12px;padding:4px;border:1px solid var(--border);overflow-x:auto;-webkit-overflow-scrolling:touch;}
+.tab{flex:1;min-width:80px;padding:8px 6px;font-size:12px;font-weight:500;font-family:inherit;border:none;background:transparent;color:var(--muted);cursor:pointer;border-radius:9px;transition:all 0.2s;text-align:center;white-space:nowrap;}
+.tab.active{background:var(--surface2);color:var(--text);border:1px solid var(--border);font-weight:600;}
+.tab:focus{outline:none;-webkit-tap-highlight-color:transparent;}
+.tab:focus-visible{outline:none;}
+
+/* LAYOUT PC: dos columnas */
+.split{display:grid;grid-template-columns:280px 1fr;gap:12px;align-items:start;}
+.left-panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;position:sticky;top:12px;}
+.right-panel{display:flex;flex-direction:column;gap:12px;}
+
+/* LAYOUT MÓVIL: una columna */
+@media(max-width:680px){
+  .split{grid-template-columns:1fr;gap:10px;}
+  .left-panel{position:static;box-shadow:none;border-radius:12px;padding:0.875rem;}
+  .right-panel{gap:10px;}
+  .app{padding:1rem 0.75rem 2rem;}
+  .header h1{font-size:18px;}
+  .tab{font-size:10px;padding:7px 3px;min-width:56px;}
+  .mcard-val{font-size:15px;}
+  .metrics{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  .mant-grid{grid-template-columns:1fr 1fr;gap:6px;}
+  .card{box-shadow:none;border-radius:12px;padding:0.875rem;}
+  .insight,.info-box,.success-box{border-radius:10px;}
+}
+
+.panel-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:0.75rem;}
+.sep{font-size:12px;font-weight:600;color:var(--faint);text-transform:uppercase;letter-spacing:0.06em;margin:0.85rem 0 0.6rem;padding-top:0.75rem;border-top:1px solid var(--border);}
+.slider-block{margin-bottom:0.75rem;}
+.slider-block:last-child{margin-bottom:0;}
+.slider-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:2px;}
+.slider-label{font-size:12px;font-weight:500;color:var(--text);}
+.slider-val{font-size:12px;font-weight:700;color:var(--text);}
+.slider-hint{font-size:10px;color:var(--faint);margin-bottom:4px;}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:var(--border);border-radius:2px;outline:none;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--elec);cursor:pointer;border:2px solid white;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.card-title{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.card-desc{font-size:12px;color:var(--muted);margin-bottom:0.75rem;line-height:1.6;}
+.metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;}
+.mcard{background:var(--surface2);border-radius:10px;padding:0.75rem;border-top:3px solid transparent;text-align:center;}
+.mcard.elec{border-top-color:var(--elec);}
+.mcard.gas{border-top-color:var(--gas);}
+.mcard.glp{border-top-color:var(--glp);}
+.mcard-icon{font-size:16px;margin-bottom:4px;}
+.mcard-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.mcard-val{font-size:17px;font-weight:700;line-height:1;}
+.mcard-val.elec{color:var(--elec);}
+.mcard-val.gas{color:var(--gas);}
+.mcard-val.glp{color:var(--glp);}
+.mcard-sub{font-size:10px;color:var(--muted);margin-top:3px;}
+.legend{display:flex;gap:12px;margin-bottom:8px;flex-wrap:wrap;}
+.leg{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);}
+.leg-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+.bar-row{margin-bottom:10px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-header{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;}
+.bar-name{font-weight:500;color:var(--text);}
+.bar-track{background:var(--border);border-radius:3px;height:8px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:3px;transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
+.mant-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.mant-card{background:var(--surface2);border-radius:10px;padding:0.75rem;}
+.mant-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px;}
+.mant-val{font-size:15px;font-weight:700;}
+.mant-sub{font-size:10px;color:var(--muted);margin-top:2px;}
+.be-row{display:flex;justify-content:space-between;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--border);gap:1rem;}
+.be-row:last-child{border-bottom:none;}
+.be-label{font-size:12px;color:var(--text);font-weight:500;}
+.be-subdesc{font-size:11px;color:var(--muted);margin-top:2px;line-height:1.5;}
+.be-val{font-size:12px;font-weight:700;text-align:right;flex-shrink:0;}
+.be-winner{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:3px;}
+.be-winner-elec{background:rgba(14,168,110,0.12);color:#0ea86e;}
+.be-winner-glp{background:rgba(26,127,212,0.12);color:#1a7fd4;}
+.warn-box{background:#fff8f0;border:1px solid rgba(232,90,30,0.25);border-radius:8px;padding:8px 12px;margin-top:6px;}
+.warn-box p{font-size:11px;color:#b84a10;line-height:1.6;}
+.formula-box{background:var(--surface2);border-radius:8px;padding:0.75rem;margin-bottom:0.75rem;border-left:3px solid var(--elec);}
+.formula-box p{font-size:12px;color:var(--muted);line-height:1.7;}
+.formula-box strong{color:var(--text);}
+.insight{background:#f0f6fd;border:1px solid rgba(26,127,212,0.2);border-radius:10px;padding:0.75rem;}
+.insight p{font-size:12px;color:#1a5a9a;line-height:1.6;}
+.info-box{background:#f0faf6;border:1px solid rgba(14,168,110,0.25);border-radius:10px;padding:0.75rem;}
+.info-box p{font-size:12px;color:#0a7a50;line-height:1.6;}
+.success-box{background:#f0faf6;border:1px solid rgba(14,168,110,0.3);border-radius:10px;padding:0.75rem;}
+.ahorro-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:0.75rem;}
+.ahorro-card{background:#f0faf6;border:1px solid rgba(14,168,110,0.2);border-radius:10px;padding:0.6rem;text-align:center;}
+.ahorro-label{font-size:10px;color:#0a7a50;font-weight:600;text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;}
+.ahorro-val{font-size:15px;font-weight:700;color:#0ea86e;line-height:1;}
+.ahorro-sub{font-size:10px;color:#606080;margin-top:2px;}
+.success-box p{font-size:12px;color:#0a7a50;line-height:1.6;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+@keyframes numPop{0%{transform:scale(1);}50%{transform:scale(1.06);}100%{transform:scale(1);}}
+.animate{animation:fadeUp 0.3s ease forwards;}
+.pop{animation:numPop 0.25s ease;}
+</style>
 </head>
 <body>
 <div class="app">
-
   <div class="header">
     <h1>Simulador de costos vehiculares 🇨🇷</h1>
     <p>Mové los sliders y mirá cómo cambian las gráficas en tiempo real</p>
@@ -28,67 +139,101 @@
     <button class="tab" onclick="switchTab('amb')">Ambiental</button>
   </div>
 
+<<<<<<< HEAD
   <!-- ── SIMULADOR ──────────────────────────────────────────────── -->
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
   <div id="tab-sim" class="animate">
     <div class="split">
       <div class="left-panel">
         <div class="panel-title">Parámetros</div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label">Km por mes</span><span class="slider-val" id="km-out">1 250 km</span></div>
           <div class="slider-hint">15 000 km/año = referencia del estudio</div>
           <input type="range" min="200" max="5000" step="100" value="1250" id="km" oninput="update()">
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label">Años de análisis</span><span class="slider-val" id="years-out">10 años</span></div>
           <div class="slider-hint">¿Cuánto tiempo con el vehículo?</div>
           <input type="range" min="1" max="15" step="1" value="10" id="years" oninput="update()">
         </div>
+<<<<<<< HEAD
 
         <div class="sep">Precio de compra</div>
         <div class="slider-hint" style="margin-bottom:8px;">Referencia: SUV compacto tipo Hyundai Kona / BYD Yuan Pro</div>
 
+=======
+        <div class="sep">Precio de compra</div>
+        <div class="slider-hint" style="margin-bottom:8px;">Referencia: SUV compacto tipo Hyundai Kona / BYD Yuan Pro</div>
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label" style="color:#0ea86e">⚡ Eléctrico</span><span class="slider-val" id="c0elec-out">₡18M</span></div>
           <div class="slider-hint">BYD Yuan Pro, Kia EV6, Nissan Leaf</div>
           <input type="range" min="10000000" max="40000000" step="500000" value="18000000" id="c0elec" oninput="update()">
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label" style="color:#e85a1e">⛽ Gasolina</span><span class="slider-val" id="c0gas-out">₡9M</span></div>
           <div class="slider-hint">Hyundai Kona gasolina, Toyota Corolla</div>
           <input type="range" min="5000000" max="25000000" step="500000" value="9000000" id="c0gas" oninput="update()">
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label" style="color:#1a7fd4">🔵 Gas GLP</span><span class="slider-val" id="c0glp-out">₡11M</span></div>
           <div class="slider-hint">Incluye costo de conversión a GLP</div>
           <input type="range" min="5000000" max="25000000" step="500000" value="11000000" id="c0glp" oninput="update()">
         </div>
+<<<<<<< HEAD
 
         <div class="sep">Precios de combustible</div>
         <div class="slider-hint" style="margin-bottom:8px;">Regulados por ARESEP e ICE. Podés simular subidas de precio.</div>
 
+=======
+        <div class="sep">Precios de combustible</div>
+        <div class="slider-hint" style="margin-bottom:8px;">Regulados por ARESEP e ICE. Podés simular subidas de precio.</div>
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label">Gasolina (₡/L)</span><span class="slider-val" id="pgas-out">₡650</span></div>
           <div class="slider-hint">Precio referencia del estudio: ₡650/L</div>
           <input type="range" min="500" max="1000" step="10" value="650" id="pgas" oninput="update()">
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label">Gas GLP (₡/L)</span><span class="slider-val" id="pglp-out">₡280</span></div>
           <div class="slider-hint">Casi la mitad del precio de la gasolina</div>
           <input type="range" min="150" max="500" step="10" value="280" id="pglp" oninput="update()">
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="slider-block">
           <div class="slider-top"><span class="slider-label">Electricidad (₡/kWh)</span><span class="slider-val" id="pelec-out">₡105</span></div>
           <div class="slider-hint">Promedio ponderado ICE residencial: ₡105/kWh</div>
           <input type="range" min="60" max="200" step="5" value="105" id="pelec" oninput="update()">
         </div>
       </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
       <div class="right-panel">
         <div class="card">
           <div class="card-title">Costo total acumulado</div>
@@ -99,7 +244,10 @@
             <div class="ahorro-grid" id="ahorro-cards"></div>
           </div>
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="card">
           <div class="card-title">Evolución del costo año a año</div>
           <div class="card-desc">El punto donde arranca cada línea es el precio de compra. La velocidad a la que sube incluye combustible y mantenimiento. Donde se cruzan dos líneas es el punto de equilibrio.</div>
@@ -110,7 +258,10 @@
           </div>
           <div style="position:relative;width:100%;height:240px;"><canvas id="c1"></canvas></div>
         </div>
+<<<<<<< HEAD
 
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
         <div class="card">
           <div class="card-title">Costo por kilómetro — solo combustible</div>
           <div class="card-desc">Cuánto pagás cada vez que recorrés 1 km. Se calcula dividiendo el precio del combustible entre el rendimiento del vehículo.</div>
@@ -120,7 +271,10 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- ── EQUILIBRIO ─────────────────────────────────────────────── -->
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
   <div id="tab-be" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -144,7 +298,10 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- ── MANTENIMIENTO ──────────────────────────────────────────── -->
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
   <div id="tab-mant" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -176,7 +333,10 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- ── EFICIENCIA ─────────────────────────────────────────────── -->
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
   <div id="tab-efic" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -200,7 +360,10 @@
     </div>
   </div>
 
+<<<<<<< HEAD
   <!-- ── AMBIENTAL ──────────────────────────────────────────────── -->
+=======
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
   <div id="tab-amb" style="display:none;">
     <div class="split">
       <div class="left-panel">
@@ -220,6 +383,7 @@
       </div>
     </div>
   </div>
+<<<<<<< HEAD
 
 </div>
 
@@ -227,3 +391,151 @@
 <script src="script.js"></script>
 </body>
 </html>
+=======
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const REND={gasKmL:12,glpKmL:10,elecKwhKm:0.18};
+const MANT={elec:80000,gas:250000,glp:165000};
+const EMISION={elec:10,gas:170,glp:130};
+const EFIC={elec:60.5,gas:19,glp:22};
+const GRID='rgba(0,0,0,0.05)';
+const TICK={color:'#606080',font:{size:10,family:'Plus Jakarta Sans, sans-serif'}};
+const TT={backgroundColor:'#fff',titleColor:'#1a1a2e',bodyColor:'#606080',borderColor:'#e0e0ea',borderWidth:1};
+let charts={};
+function fmt(n){return Math.round(n).toLocaleString('es-CR');}
+function fmtM(n){return (n/1e6).toFixed(1)+'M';}
+function mk(id,cfg){
+  if(!document.getElementById(id))return;
+  if(charts[id]){
+    charts[id].data=cfg.data;
+    charts[id].options.scales=cfg.options.scales;
+    charts[id].update({duration:1200,easing:'easeInOutQuart'});
+    return;
+  }
+  const isBar = cfg.type === 'bar';
+  if(cfg.options) cfg.options.animation = isBar ? {
+    duration:1200,
+    easing:'easeInOutQuart',
+    y:{duration:1200,easing:'easeInOutQuart',from:ctx=>ctx.chart.scales.y.bottom}
+  } : {
+    duration:1200,
+    easing:'easeInOutQuart'
+  };
+  charts[id]=new Chart(document.getElementById(id),cfg);
+}
+function pop(id){const el=document.getElementById(id);if(!el)return;el.classList.remove('pop');void el.offsetWidth;el.classList.add('pop');}
+function params(){return{km:parseInt(document.getElementById('km').value),years:parseInt(document.getElementById('years').value),c0elec:parseInt(document.getElementById('c0elec').value),c0gas:parseInt(document.getElementById('c0gas').value),c0glp:parseInt(document.getElementById('c0glp').value),pgas:parseInt(document.getElementById('pgas').value),pglp:parseInt(document.getElementById('pglp').value),pelec:parseInt(document.getElementById('pelec').value)};}
+function derived(p){return{cKmGas:p.pgas/REND.gasKmL,cKmGlp:p.pglp/REND.glpKmL,cKmElec:p.pelec*REND.elecKwhKm};}
+function totalCon(c0,cKm,mantAnual,km,kmMes){const anos=km/(kmMes*12);return c0+cKm*km+mantAnual*anos;}
+function update(){
+  const p=params(),d=derived(p);
+  document.getElementById('km-out').textContent=fmt(p.km)+' km';
+  document.getElementById('years-out').textContent=p.years+' año'+(p.years>1?'s':'');
+  document.getElementById('c0elec-out').textContent='₡'+fmtM(p.c0elec);
+  document.getElementById('c0gas-out').textContent='₡'+fmtM(p.c0gas);
+  document.getElementById('c0glp-out').textContent='₡'+fmtM(p.c0glp);
+  document.getElementById('pgas-out').textContent='₡'+fmt(p.pgas);
+  document.getElementById('pglp-out').textContent='₡'+fmt(p.pglp);
+  document.getElementById('pelec-out').textContent='₡'+p.pelec;
+  const kmT=p.km*12*p.years;
+  const tE=totalCon(p.c0elec,d.cKmElec,MANT.elec,kmT,p.km);
+  const tG=totalCon(p.c0gas,d.cKmGas,MANT.gas,kmT,p.km);
+  const tL=totalCon(p.c0glp,d.cKmGlp,MANT.glp,kmT,p.km);
+  const mc=document.getElementById('metric-cards');
+  if(mc)mc.innerHTML=`<div class="mcard elec"><div class="mcard-icon">⚡</div><div class="mcard-label">Eléctrico</div><div class="mcard-val elec" id="mv0">₡${fmtM(tE)}</div><div class="mcard-sub">₡${fmt(d.cKmElec)} por km</div></div><div class="mcard gas"><div class="mcard-icon">⛽</div><div class="mcard-label">Gasolina</div><div class="mcard-val gas" id="mv1">₡${fmtM(tG)}</div><div class="mcard-sub">₡${fmt(d.cKmGas)} por km</div></div><div class="mcard glp"><div class="mcard-icon">🔵</div><div class="mcard-label">Gas GLP</div><div class="mcard-val glp" id="mv2">₡${fmtM(tL)}</div><div class="mcard-sub">₡${fmt(d.cKmGlp)} por km</div></div>`;
+  ['mv0','mv1','mv2'].forEach(pop);
+  const vals=[{l:'Eléctrico',v:d.cKmElec,c:'#0ea86e'},{l:'Gasolina',v:d.cKmGas,c:'#e85a1e'},{l:'Gas GLP',v:d.cKmGlp,c:'#1a7fd4'}];
+  const maxV=Math.max(...vals.map(x=>x.v));
+  const bc=document.getElementById('bar-compare');
+  if(bc)bc.innerHTML=vals.map(x=>`<div class="bar-row"><div class="bar-header"><span class="bar-name">${x.l}</span><span style="font-weight:600;color:${x.c}">₡${fmt(x.v)} por km</span></div><div class="bar-track"><div class="bar-fill" style="width:${Math.round(x.v/maxV*100)}%;background:${x.c};"></div></div></div>`).join('');
+  updateCharts(p,d);updateAmb(p);updateMant(p);
+
+  // Ahorro comparativo
+  const ahorroKm = d.cKmGas - d.cKmElec;
+  const ahorroMes = ahorroKm * p.km;
+  const ahorroAnual = ahorroMes * 12;
+  const ac = document.getElementById('ahorro-cards');
+  if(ac) ac.innerHTML = `
+    <div class="ahorro-card">
+      <div class="ahorro-label">Por km</div>
+      <div class="ahorro-val">₡${fmt(ahorroKm)}</div>
+      <div class="ahorro-sub">menos en eléctrico</div>
+    </div>
+    <div class="ahorro-card">
+      <div class="ahorro-label">Por mes</div>
+      <div class="ahorro-val">₡${fmt(ahorroMes)}</div>
+      <div class="ahorro-sub">a ${fmt(p.km)} km/mes</div>
+    </div>
+    <div class="ahorro-card">
+      <div class="ahorro-label">Por año</div>
+      <div class="ahorro-val">₡${fmt(ahorroAnual)}</div>
+      <div class="ahorro-sub">solo en combustible</div>
+    </div>
+  `;
+}
+function updateCharts(p,d){
+  const labels=[],dE=[],dG=[],dL=[];
+  for(let y=0;y<=p.years;y++){labels.push('Año '+y);const km=p.km*12*y;dE.push(+(totalCon(p.c0elec,d.cKmElec,MANT.elec,km,p.km)/1e6).toFixed(2));dG.push(+(totalCon(p.c0gas,d.cKmGas,MANT.gas,km,p.km)/1e6).toFixed(2));dL.push(+(totalCon(p.c0glp,d.cKmGlp,MANT.glp,km,p.km)/1e6).toFixed(2));}
+  mk('c1',{type:'line',data:{labels,datasets:[{label:'Eléctrico',data:dE,borderColor:'#0ea86e',backgroundColor:'rgba(14,168,110,0.07)',tension:0.35,fill:true,pointRadius:2,pointBackgroundColor:'#0ea86e'},{label:'Gasolina',data:dG,borderColor:'#e85a1e',backgroundColor:'rgba(232,90,30,0.07)',tension:0.35,fill:true,pointRadius:2,pointBackgroundColor:'#e85a1e'},{label:'Gas GLP',data:dL,borderColor:'#1a7fd4',backgroundColor:'rgba(26,127,212,0.07)',tension:0.35,fill:true,pointRadius:2,pointBackgroundColor:'#1a7fd4'}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>' ₡'+ctx.parsed.y.toFixed(2)+'M total'}}},scales:{x:{ticks:TICK,grid:{color:GRID}},y:{ticks:{...TICK,callback:v=>'₡'+v+'M'},grid:{color:GRID}}}}});
+  const cKmGasT=d.cKmGas+MANT.gas/(p.km*12);const cKmElecT=d.cKmElec+MANT.elec/(p.km*12);const cKmGlpT=d.cKmGlp+MANT.glp/(p.km*12);
+  const beGE=(p.c0elec-p.c0gas)/(cKmGasT-cKmElecT);const beLe=(p.c0elec-p.c0glp)/(cKmGlpT-cKmElecT);const beGL=(p.c0glp-p.c0gas)/(cKmGasT-cKmGlpT);
+  function fmtBE(km,nB,nC,winnerClass){if(!isFinite(km)||km<0)return{val:'Sin equilibrio',desc:`Con estos precios el ${nC} siempre es más barato.`,warn:false,winner:''};const m=Math.round(km/p.km);const a=(m/12).toFixed(1);const warn=m>240;const desc=warn?`A tu ritmo actual esto tardaría ${a} años — un plazo poco realista.`:`Después de ${m} meses (${a} años) manejando ${fmt(p.km)} km/mes, el ${nB} habrá costado lo mismo que el ${nC} en total. A partir de ahí el ${nB} es más económico.`;const winner=`<span class="be-winner ${winnerClass}">Gana: ${nB}</span>`;return{val:fmt(Math.round(km))+' km',desc,warn,winner};}
+  const rows=[{label:'Eléctrico vs Gasolina',be:fmtBE(beGE,'eléctrico','de gasolina','be-winner-elec'),color:'#0ea86e'},{label:'Eléctrico vs Gas GLP',be:fmtBE(beLe,'eléctrico','de gas GLP','be-winner-elec'),color:'#0ea86e'},{label:'Gas GLP vs Gasolina',be:fmtBE(beGL,'GLP','de gasolina','be-winner-glp'),color:'#1a7fd4'}];
+  const bl=document.getElementById('be-list');
+  if(bl)bl.innerHTML=rows.map(r=>`<div class="be-row"><div><div class="be-label">${r.label}</div><div class="be-subdesc">${r.be.desc}</div>${r.be.winner?`<div>${r.be.winner}</div>`:''} ${r.be.warn?`<div class="warn-box"><p>⚠️ <strong>Plazo muy largo.</strong> Subí los km/mes en el Simulador para ver un escenario más realista.</p></div>`:''}</div><div class="be-val" style="color:${r.color}">${r.be.val}</div></div>`).join('');
+
+  // Insight dinámico
+  const kmT2=p.km*12*p.years;
+  const ahorroTotal=totalCon(p.c0gas,d.cKmGas,MANT.gas,kmT2,p.km)-totalCon(p.c0elec,d.cKmElec,MANT.elec,kmT2,p.km);
+  const bi=document.getElementById('be-insight');
+  if(bi){
+    if(ahorroTotal>0){
+      bi.style.background='#f0faf6';bi.style.borderColor='rgba(14,168,110,0.25)';
+      bi.querySelector('p').innerHTML=`💡 Con estos parámetros, elegir eléctrico en vez de gasolina genera un <strong>ahorro total de ₡${fmt(ahorroTotal)}</strong> durante los ${p.years} años de análisis, contando combustible y mantenimiento.`;
+    } else {
+      bi.style.background='#fff8f0';bi.style.borderColor='rgba(232,90,30,0.25)';
+      bi.querySelector('p').style.color='#b84a10';
+      bi.querySelector('p').innerHTML=`⚠️ Con estos parámetros, el vehículo de gasolina sigue siendo más económico en total durante los ${p.years} años de análisis. Aumentá los km/mes o los años para cambiar el resultado.`;
+    }
+  }
+  const maxKm=Math.max(isFinite(beGE)&&beGE>0?beGE:0,isFinite(beLe)&&beLe>0?beLe:0,150000)*1.3;
+  const steps=9,bl2=[],dE2=[],dG2=[],dL2=[];
+  for(let i=0;i<=steps;i++){const km=Math.round(maxKm*i/steps);bl2.push((km/1000).toFixed(0)+'k km');dE2.push(+(totalCon(p.c0elec,d.cKmElec,MANT.elec,km,p.km)/1e6).toFixed(2));dG2.push(+(totalCon(p.c0gas,d.cKmGas,MANT.gas,km,p.km)/1e6).toFixed(2));dL2.push(+(totalCon(p.c0glp,d.cKmGlp,MANT.glp,km,p.km)/1e6).toFixed(2));}
+  mk('c2',{type:'line',data:{labels:bl2,datasets:[{label:'Eléctrico',data:dE2,borderColor:'#0ea86e',tension:0.2,fill:false,pointRadius:2},{label:'Gasolina',data:dG2,borderColor:'#e85a1e',tension:0.2,fill:false,pointRadius:2},{label:'Gas GLP',data:dL2,borderColor:'#1a7fd4',tension:0.2,fill:false,pointRadius:2}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{...TT,callbacks:{label:ctx=>' ₡'+ctx.parsed.y.toFixed(2)+'M total'}}},scales:{x:{title:{display:true,text:'Kilómetros totales recorridos',color:'#606080',font:{size:10}},ticks:{...TICK,maxRotation:45},grid:{color:GRID}},y:{ticks:{...TICK,callback:v=>'₡'+v+'M'},grid:{color:GRID}}}}});
+  mk('c3',{type:'bar',data:{labels:['Eléctrico','Gasolina','Gas GLP'],datasets:[{data:[EFIC.elec,EFIC.gas,EFIC.glp],backgroundColor:['rgba(14,168,110,0.8)','rgba(232,90,30,0.8)','rgba(26,127,212,0.8)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+ctx.parsed.y+'% de la energía mueve el vehículo'}}},scales:{y:{max:100,ticks:{...TICK,callback:v=>v+'%'},grid:{color:GRID}},x:{ticks:TICK,grid:{color:GRID}}}}});
+  mk('c4',{type:'bar',data:{labels:['Gasolina (km/L)','Gas GLP (km/L)','Eléctrico (km/kWh)'],datasets:[{data:[12,10,5.5],backgroundColor:['rgba(232,90,30,0.8)','rgba(26,127,212,0.8)','rgba(14,168,110,0.8)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>{const units=['km/L','km/L','km/kWh'];return ' '+ctx.parsed.y+' '+units[ctx.dataIndex];}}}},scales:{y:{ticks:TICK,grid:{color:GRID}},x:{ticks:TICK,grid:{color:GRID}}}}});
+}
+function updateMant(p){
+  mk('c_mant',{type:'bar',data:{labels:['Gasolina','Eléctrico','Gas GLP'],datasets:[{data:[MANT.gas,MANT.elec,MANT.glp],backgroundColor:['rgba(232,90,30,0.8)','rgba(14,168,110,0.8)','rgba(26,127,212,0.8)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' ₡'+fmt(ctx.parsed.y)+' por año'}}},scales:{y:{ticks:{...TICK,callback:v=>'₡'+fmt(v)},grid:{color:GRID}},x:{ticks:TICK,grid:{color:GRID}}}}});
+  const labels=[],dA=[];
+  for(let y=1;y<=p.years;y++){labels.push('Año '+y);dA.push(+((MANT.gas-MANT.elec)*y/1e6).toFixed(2));}
+  mk('c_mant2',{type:'line',data:{labels,datasets:[{label:'Ahorro',data:dA,borderColor:'#0ea86e',backgroundColor:'rgba(14,168,110,0.1)',tension:0.35,fill:true,pointRadius:3,pointBackgroundColor:'#0ea86e'}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' ₡'+ctx.parsed.y.toFixed(2)+'M ahorrados'}}},scales:{y:{ticks:{...TICK,callback:v=>'₡'+v+'M'},grid:{color:GRID}},x:{ticks:TICK,grid:{color:GRID}}}}});
+}
+function updateAmb(p){
+  const kmA=p.km*12;const emE=Math.round(EMISION.elec*kmA/1000);const emG=Math.round(EMISION.gas*kmA/1000);const emL=Math.round(EMISION.glp*kmA/1000);
+  const ec=document.getElementById('em-cards');
+  if(ec)ec.innerHTML=`<div class="mcard elec"><div class="mcard-icon">⚡</div><div class="mcard-label">Eléctrico</div><div class="mcard-val elec">${fmt(emE)} kg</div><div class="mcard-sub">CO₂ por año</div></div><div class="mcard gas"><div class="mcard-icon">⛽</div><div class="mcard-label">Gasolina</div><div class="mcard-val gas">${fmt(emG)} kg</div><div class="mcard-sub">CO₂ por año</div></div><div class="mcard glp"><div class="mcard-icon">🔵</div><div class="mcard-label">Gas GLP</div><div class="mcard-val glp">${fmt(emL)} kg</div><div class="mcard-sub">CO₂ por año</div></div>`;
+  mk('c5',{type:'bar',data:{labels:['Eléctrico','Gasolina','Gas GLP'],datasets:[{data:[emE,emG,emL],backgroundColor:['rgba(14,168,110,0.8)','rgba(232,90,30,0.8)','rgba(26,127,212,0.8)'],borderRadius:8,borderSkipped:false}]},options:{responsive:true,maintainAspectRatio:false,animation:{duration:1200,easing:'easeInOutQuart'},plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>' '+fmt(ctx.parsed.y)+' kg de CO₂ por año'}}},scales:{y:{ticks:{...TICK,callback:v=>fmt(v)+' kg'},grid:{color:GRID}},x:{ticks:TICK,grid:{color:GRID}}}}});
+}
+function switchTab(t){
+  ['sim','be','mant','efic','amb'].forEach(id=>{const el=document.getElementById('tab-'+id);if(el){el.style.display=id===t?'':'none';if(id===t){el.classList.remove('animate');void el.offsetWidth;el.classList.add('animate');}}});
+  document.querySelectorAll('.tab').forEach((btn,i)=>btn.classList.toggle('active',['sim','be','mant','efic','amb'][i]===t));
+  update();
+}
+
+// Pre-renderizar todas las pestañas al cargar para que las gráficas ya existan
+['sim','be','mant','efic','amb'].forEach(id=>{
+  const el=document.getElementById('tab-'+id);
+  if(el) el.style.display='';
+});
+update();
+['sim','be','mant','efic','amb'].forEach(id=>{
+  const el=document.getElementById('tab-'+id);
+  if(el) el.style.display=id==='sim'?'':'none';
+});
+</script>
+</body>
+</html>
+>>>>>>> c3c9a6d46c41139f7d6c4b0e07c6d860e5e147dc
