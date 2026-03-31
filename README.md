@@ -86,5 +86,5 @@ The case study compares electric, gasoline, and LPG vehicles across four dimensi
 
 ## Author
 
-**Key** — Computer Engineering student, Costa Rica  
+**Keyron Brenes** — Computer Engineering student, Costa Rica  
 GitHub: [@keyronagain](https://github.com/keyronagain)
