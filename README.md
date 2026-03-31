@@ -74,16 +74,6 @@ simulador-vehiculos-cr/
 └── README.md        # This file
 ```
 
----
-
-## Academic context
-
-This simulator was developed as the **Engineering Proposal (Section IV)** of a university case study on vehicle efficiency and costs in Costa Rica, for a Mathematics I course in Computer Engineering.
-
-The case study compares electric, gasoline, and LPG vehicles across four dimensions: economic cost, energy efficiency, maintenance, and environmental impact.
-
----
-
 ## Author
 
 **Keyron Brenes** — Computer Engineering student, Costa Rica  
