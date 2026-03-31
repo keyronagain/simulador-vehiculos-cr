@@ -1,6 +1,8 @@
-# Costa Rica Vehicle Cost Simulator
+# 🇨🇷 Costa Rica Vehicle Cost Simulator
 
 An interactive web simulator that compares the total ownership cost of electric, gasoline, and LPG gas vehicles in the Costa Rican context.
+
+Helps Costa Rican drivers make data-driven decisions when choosing between vehicle types by modeling total cost of ownership over time.
 
 Built as part of a university engineering case study on energy efficiency and transportation costs.
 
@@ -74,7 +76,17 @@ simulador-vehiculos-cr/
 └── README.md        # This file
 ```
 
+---
+
+## Academic context
+
+This simulator was developed as the **Engineering Proposal (Section IV)** of a university case study on vehicle efficiency and costs in Costa Rica, for a Mathematics I course in Computer Engineering.
+
+The case study compares electric, gasoline, and LPG vehicles across four dimensions: economic cost, energy efficiency, maintenance, and environmental impact.
+
+---
+
 ## Author
 
-**Keyron Brenes** — Computer Engineering student, Costa Rica  
+**Key** — Computer Engineering student, Costa Rica  
 GitHub: [@keyronagain](https://github.com/keyronagain)
